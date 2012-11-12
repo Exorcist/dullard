@@ -65,8 +65,10 @@ class Dullard::Sheet
           y << row
         elsif node.name == "c" and node.node_type == Nokogiri::XML::Reader::TYPE_ELEMENT
             shared = (node.attribute("t") == "s")
-        else
+        elsif node.value?
             row << (shared ? string_lookup(node.value.to_i) : node.value)
+        else
+            row << ''
         end
       end
     end
