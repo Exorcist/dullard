@@ -63,12 +63,12 @@ class Dullard::Sheet
           row = []
         elsif node.name == "row" and node.node_type == Nokogiri::XML::Reader::TYPE_END_ELEMENT
           y << row
+        elsif node.name == "c" and node.self_closing?
+            row << ''
         elsif node.name == "c" and node.node_type == Nokogiri::XML::Reader::TYPE_ELEMENT
             shared = (node.attribute("t") == "s")
         elsif node.value?
-            row << (shared ? string_lookup(node.value.to_i) : node.value)
-        elsif node.name == "c" and node.self_closing?
-            row << ''
+            row << (shared ? string_lookup(node.value.to_i) : node.value)        
         end
       end
     end
