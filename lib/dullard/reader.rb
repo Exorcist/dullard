@@ -67,8 +67,8 @@ class Dullard::Sheet
             shared = (node.attribute("t") == "s")
         elsif node.value?
             row << (shared ? string_lookup(node.value.to_i) : node.value)
-        elsif node.node_type == Nokogiri::XML::Reader::TYPE_ELEMENT and node.self_closing?
-            row << '' unless row.nil?
+        elsif node.name == "c" and node.self_closing?
+            row << ''
         end
       end
     end
