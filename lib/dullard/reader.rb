@@ -4,6 +4,8 @@ require 'nokogiri'
 module Dullard; end
 
 class Dullard::Workbook
+  include Enumerable
+  
   def initialize(file)
     @file = file
     @zipfs = Zip::ZipFile.open(@file)
@@ -54,8 +56,7 @@ class Dullard::Sheet
     @workbook.string_table[i]
   end
 
-  def rows
-    include Enumerable
+  def rows    
     Enumerator.new do |y|
       shared = false
       row = nil
