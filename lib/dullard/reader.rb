@@ -4,8 +4,7 @@ require 'nokogiri'
 module Dullard; end
 
 class Dullard::Workbook
-  include Enumerable
-  
+
   def initialize(file)
     @file = file
     @zipfs = Zip::ZipFile.open(@file)
@@ -54,6 +53,29 @@ class Dullard::Sheet
 
   def string_lookup(i)
     @workbook.string_table[i]
+  end
+
+  def old_rows
+    rows = []
+    shared = false
+    row = nil
+    
+    Nokogiri::XML::Reader(@workbook.zipfs.file.open("xl/worksheets/sheet#{@id}.xml")).each do |node|
+      if node.name == "row" and node.node_type == Nokogiri::XML::Reader::TYPE_ELEMENT
+        rows << row if row.present?
+        row = []
+      elsif node.name == "row" and node.node_type == Nokogiri::XML::Reader::TYPE_END_ELEMENT
+        y << row
+      elsif node.name == "c" and node.self_closing?
+          row << ''
+      elsif node.name == "c" and node.node_type == Nokogiri::XML::Reader::TYPE_ELEMENT
+          shared = (node.attribute("t") == "s")
+      elsif node.value?
+          row << (shared ? string_lookup(node.value.to_i) : node.value)        
+      end
+    end
+
+    rows
   end
 
   def rows    
