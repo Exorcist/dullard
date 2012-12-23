@@ -55,17 +55,16 @@ class Dullard::Sheet
     @workbook.string_table[i]
   end
 
-  def old_rows
+  def rows_1_8
     rows = []
     shared = false
     row = nil
-    
+
     Nokogiri::XML::Reader(@workbook.zipfs.file.open("xl/worksheets/sheet#{@id}.xml")).each do |node|
-      if node.name == "row" and node.node_type == Nokogiri::XML::Reader::TYPE_ELEMENT
-        rows << row if row.present?
+      if node.name == "row" and node.node_type == Nokogiri::XML::Reader::TYPE_ELEMENT        
         row = []
       elsif node.name == "row" and node.node_type == Nokogiri::XML::Reader::TYPE_END_ELEMENT
-        y << row
+        rows << row
       elsif node.name == "c" and node.self_closing?
           row << ''
       elsif node.name == "c" and node.node_type == Nokogiri::XML::Reader::TYPE_ELEMENT
