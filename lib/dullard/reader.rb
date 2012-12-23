@@ -55,6 +55,7 @@ class Dullard::Sheet
   end
 
   def rows
+    include Enumerable
     Enumerator.new do |y|
       shared = false
       row = nil
