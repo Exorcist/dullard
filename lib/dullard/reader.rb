@@ -44,11 +44,16 @@ class Dullard::Workbook
 end
 
 class Dullard::Sheet
-  attr_reader :name, :workbook
+  attr_reader :name, :workbook, :letters
   def initialize(workbook, name, id)
     @workbook = workbook
     @name = name
     @id = id
+    @letters = ('A'..'Z').to_a
+  end
+
+  def column_name(current_row, current_column)
+    "#{@letters[current_column - 1]}#{current_row}"
   end
 
   def string_lookup(i)
@@ -77,19 +82,38 @@ class Dullard::Sheet
     rows
   end
 
-  def rows    
+  def rows   
     Enumerator.new do |y|
       shared = false
       row = nil
+      current_column = nil
+      current_row    = 0
       Nokogiri::XML::Reader(@workbook.zipfs.file.open("xl/worksheets/sheet#{@id}.xml")).each do |node|
         if node.name == "row" and node.node_type == Nokogiri::XML::Reader::TYPE_ELEMENT
+          current_column =  0
+          current_row    += 1
           row = []
         elsif node.name == "row" and node.node_type == Nokogiri::XML::Reader::TYPE_END_ELEMENT
           y << row
-        elsif node.name == "c" and node.self_closing?
+        elsif node.name == "c" and (node.self_closing? || node.node_type == Nokogiri::XML::Reader::TYPE_ELEMENT)
+          current_column += 1
+          if node.attribute("r") && 
+            node.attribute("r") != column_name(current_row, current_column)
+            iter = 0
+            while node.attribute("r") != column_name(current_row, current_column)
+              puts column_name(current_row, current_column)
+              row << ''
+              current_column += 1
+              iter += 1
+              break if iter > 10
+            end
+          end
+
+          if node.self_closing?
             row << ''
-        elsif node.name == "c" and node.node_type == Nokogiri::XML::Reader::TYPE_ELEMENT
+          else
             shared = (node.attribute("t") == "s")
+          end
         elsif node.value?
             row << (shared ? string_lookup(node.value.to_i) : node.value)        
         end
